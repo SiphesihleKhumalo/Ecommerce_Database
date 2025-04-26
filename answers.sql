@@ -158,3 +158,115 @@ CREATE TABLE product_attribute (
     FOREIGN KEY (attr_type_id) REFERENCES attribute_type(attr_type_id)
 );
 
+
+-- Insert phone brands
+INSERT INTO brand (name, description, founded_year) VALUES 
+('Apple', 'American multinational technology company', 1976),
+('Samsung', 'South Korean multinational electronics company', 1938),
+('Huawei', 'Chinese multinational technology company', 1987);
+
+-- Insert phone categories
+INSERT INTO product_category (name, description) VALUES 
+('Smartphones', 'Mobile phones with advanced computing capabilities'),
+('Feature Phones', 'Basic mobile phones with limited functionality');
+
+-- Insert size categories for phones
+INSERT INTO size_category (name, description) VALUES 
+('Storage', 'Internal storage capacity'),
+('RAM', 'Random Access Memory capacity'),
+('Screen Size', 'Display size in inches');
+
+-- Insert size options
+INSERT INTO size_option (size_category_id, value, description) VALUES 
+(1, '64GB', '64 Gigabytes storage'),
+(1, '128GB', '128 Gigabytes storage'),
+(1, '256GB', '256 Gigabytes storage'),
+(2, '4GB', '4 Gigabytes RAM'),
+(2, '6GB', '6 Gigabytes RAM'),
+(2, '8GB', '8 Gigabytes RAM'),
+(3, '6.1"', '6.1 inch display'),
+(3, '6.7"', '6.7 inch display');
+
+-- Insert colors
+INSERT INTO color (name, hex_code) VALUES 
+('Midnight Black', '#000000'),
+('Silver', '#C0C0C0'),
+('Gold', '#FFD700'),
+('Pacific Blue', '#1CA3EC'),
+('Phantom Black', '#2D2926');
+
+-- Insert attribute categories
+INSERT INTO attribute_category (name, description) VALUES 
+('Display', 'Screen specifications'),
+('Camera', 'Camera specifications'),
+('Battery', 'Battery specifications'),
+('Performance', 'Processor and performance specs');
+
+-- Insert attribute types
+INSERT INTO attribute_type (name, data_type) VALUES 
+('Resolution', 'TEXT'),
+('Refresh Rate', 'NUMBER'),
+('Megapixels', 'NUMBER'),
+('Capacity', 'NUMBER'),
+('Processor', 'TEXT'),
+('Water Resistance', 'BOOLEAN');
+
+-- Insert sample products
+INSERT INTO product (name, description, brand_id, category_id, base_price) VALUES 
+('iPhone 13 Pro', 'Apple iPhone 13 Pro with A15 Bionic chip', 1, 1, 999.00),
+('Galaxy S22 Ultra', 'Samsung Galaxy S22 Ultra with S Pen', 2, 1, 1199.99),
+('Mate 50 Pro', 'Huawei Mate 50 Pro with Leica cameras', 3, 1, 1099.00);
+
+
+ADDITIONAL TABLES:
+
+CREATE TABLE customer (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    phone VARCHAR(20),
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Address table for shipping/billing
+CREATE TABLE address (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    address_type ENUM('SHIPPING', 'BILLING') NOT NULL,
+    street_address1 VARCHAR(100) NOT NULL,
+    street_address2 VARCHAR(100),
+    city VARCHAR(50) NOT NULL,
+    state VARCHAR(50) NOT NULL,
+    postal_code VARCHAR(20) NOT NULL,
+    country VARCHAR(50) NOT NULL,
+    is_default BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (customer_id) REFERENCES customer(id)
+);
+
+-- Orders table
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(10,2) NOT NULL,
+    status ENUM('PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED') DEFAULT 'PENDING',
+    shipping_address_id INT,
+    billing_address_id INT,
+    FOREIGN KEY (customer_id) REFERENCES customer(id),
+    FOREIGN KEY (shipping_address_id) REFERENCES address(id),
+    FOREIGN KEY (billing_address_id) REFERENCES address(id)
+);
+
+-- Order items table
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_item_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_item_id) REFERENCES product_item(id)
+);
